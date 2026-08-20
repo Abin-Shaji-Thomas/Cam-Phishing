@@ -1,5 +1,6 @@
 #!/bin/bash
 # CyberSense Cleanup Script
+# Developed by Abin Shaji Thomas | abinshajithomas.vercel.app
 # Clears all captured data, photos, QR codes, logs, and generated files
 
 GREEN='\e[1;92m'

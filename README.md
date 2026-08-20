@@ -4,11 +4,13 @@
 
 **An educational check-in and quiz platform designed for cybersecurity awareness workshops and seminars.**
 
-[![Educational Use Only](https://img.shields.io/badge/Purpose-Educational%20Only-blue?style=flat-square)](/)
+[![Developed by Abin Shaji Thomas](https://img.shields.io/badge/Developed%20by-Abin%20Shaji%20Thomas-0a66c2?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/abin-shaji-thomas)
+[![Portfolio](https://img.shields.io/badge/Portfolio-abinshajithomas.vercel.app-black?style=flat-square&logo=vercel)](https://abinshajithomas.vercel.app)
+[![Instagram](https://img.shields.io/badge/Instagram-@abin__shaji__thomas-E1306C?style=flat-square&logo=instagram)](https://instagram.com/abin_shaji_thomas)
+[![Educational Use Only](https://img.shields.io/badge/Purpose-Educational%20Only-blue?style=flat-square)](/) 
 [![PHP](https://img.shields.io/badge/PHP-8.0+-777BB4?style=flat-square&logo=php)](https://php.net)
-[![Bash](https://img.shields.io/badge/Shell-Bash-4EAA25?style=flat-square&logo=gnu-bash)](/)
+[![Bash](https://img.shields.io/badge/Shell-Bash-4EAA25?style=flat-square&logo=gnu-bash)](/) 
 [![Cloudflare Tunnel](https://img.shields.io/badge/Tunnel-Cloudflare-F48120?style=flat-square&logo=cloudflare)](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/)
-[![License](https://img.shields.io/badge/License-Educational-green?style=flat-square)](/)
 
 </div>
 
@@ -219,8 +221,17 @@ Make sure students are using the generated Cloudflare URL (not localhost). Check
 
 ---
 
-## 🙏 Credits
+## 👤 About the Developer
 
-- Developed by **[Abin Shaji Thomas](https://github.com/Abin-Shaji-Thomas)**
-- Tunneling powered by [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/)
-- Designed for the **Cybersecurity Awareness Workshop** — Karunya University
+This tool was fully designed, developed, and customized by **Abin Shaji Thomas** for educational cybersecurity workshops.
+
+| | |
+|---|---|
+| 💼 **LinkedIn** | [Abin Shaji Thomas](https://www.linkedin.com/in/abin-shaji-thomas) |
+| 📸 **Instagram** | [@abin_shaji_thomas](https://instagram.com/abin_shaji_thomas) |
+| 🌐 **Portfolio** | [abinshajithomas.vercel.app](https://abinshajithomas.vercel.app) |
+| 🏫 **Institution** | URK College of Engineering & Technology |
+
+---
+
+> *CyberSense is built for educational use only. Designed and maintained by Abin Shaji Thomas.*
