@@ -230,7 +230,7 @@ This tool was fully designed, developed, and customized by **Abin Shaji Thomas**
 | 💼 **LinkedIn** | [Abin Shaji Thomas](https://www.linkedin.com/in/abin-shaji-thomas) |
 | 📸 **Instagram** | [@abin_shaji_thomas](https://instagram.com/abin_shaji_thomas) |
 | 🌐 **Portfolio** | [abinshajithomas.vercel.app](https://abinshajithomas.vercel.app) |
-| 🏫 **Institution** | URK College of Engineering & Technology |
+
 
 ---
 
