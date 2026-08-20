@@ -1,0 +1,32 @@
+# ─── Captured Student Data ────────────────────────────────────────
+photos/
+ip_logs/
+responses.jsonl
+saved.ip.txt
+saved.ip.txt
+
+# ─── Runtime-Generated Files (created fresh each run) ─────────────
+index.php
+index2.html
+qrcode.png
+Log.log
+*.log
+.cloudflared.log
+
+# ─── Cloudflare Binary (auto-downloaded on first run) ─────────────
+cloudflared
+cloudflared.exe
+
+# ─── Editor & OS Files ────────────────────────────────────────────
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+
+# ─── Legacy / Old Templates ───────────────────────────────────────
+LiveYTTV.html
+OnlineMeeting.html
+festivalwishes.html
+debug_log.php
+location.php
+LICENSE

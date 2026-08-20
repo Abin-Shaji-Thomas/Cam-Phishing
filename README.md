@@ -1,94 +1,226 @@
-# CamPhish
-Grab cam shots from target's phone front camera or PC webcam just sending a link.
-![CamPhish](https://techchip.net/wp-content/uploads/2020/04/camphish.jpg)
+<div align="center">
 
-# What is CamPhish?
-<p>CamPhish is techniques to take cam shots of target's phone front camera or PC webcam. CamPhish Hosts a fake website on in built PHP server and uses ngrok & CloudFlare Tunnel to generate a link which we will forward to the target, which can be used on over internet. website asks for camera permission and if the target allows it, this tool grab camshots of target's device
+# 🛡️ CyberSense — Cybersecurity Awareness Workshop Tool
 
-A GPS location capture feature has been added.</p>
+**An educational check-in and quiz platform designed for cybersecurity awareness workshops and seminars.**
 
-## Features
-<p>In this tool I added two automatic webpage templates for engaged target on webpage to get more picture of cam</p>
-<ul>
-  <li>Festival Wishing</li>
-  <li>Live YouTube TV</li>
-  <li>Online Meeting [Beta]</li>
-  <li>GPS Location Tracking</li>
-</ul>
-<p>A cleanup script has been added to remove all unnecessary files and logs.</p>
+[![Educational Use Only](https://img.shields.io/badge/Purpose-Educational%20Only-blue?style=flat-square)](/)
+[![PHP](https://img.shields.io/badge/PHP-8.0+-777BB4?style=flat-square&logo=php)](https://php.net)
+[![Bash](https://img.shields.io/badge/Shell-Bash-4EAA25?style=flat-square&logo=gnu-bash)](/)
+[![Cloudflare Tunnel](https://img.shields.io/badge/Tunnel-Cloudflare-F48120?style=flat-square&logo=cloudflare)](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/)
+[![License](https://img.shields.io/badge/License-Educational-green?style=flat-square)](/)
 
-## This Tool Tested On :
-<ul>
-  <li>Kali Linux</li>
-  <li>Termux</li>
-  <li>MacOS</li>
-  <li>Ubuntu</li>
-  <li>Parrot Sec OS</li>
-  <li>Windows (WSL)</li>
-</ul>
+</div>
 
-# Installing and requirements
-<p>This tool require PHP for webserver, and wget for downloading dependencies. First run following command on your terminal</p>
+---
 
-```
-apt-get -y install php wget unzip
-```
+## 📖 What Is This?
 
-## Installing (Kali Linux/Termux):
+**CyberSense** is a workshop companion tool built for cybersecurity educators and event organizers. It is designed to be run by a workshop presenter on their own laptop, and shared with an audience via a QR code.
+
+When students scan the QR code, they:
+1. Complete a **10-question cybersecurity awareness quiz** (hosted on GitHub Pages / Vercel)
+2. Are redirected to a **check-in page** where they enter their name and student ID
+3. The presenter's **admin dashboard** shows all check-ins in real time
+
+This tool is built for use in **auditoriums, classrooms, and seminars** where students primarily use mobile phones and tablets.
+
+> **⚠️ Intended Use**: This tool is built exclusively for educational workshops. Misuse of any component is the sole responsibility of the operator.
+
+---
+
+## 🗂️ Project Structure
 
 ```
-git clone https://github.com/techchipnet/CamPhish
-cd CamPhish
+CyberSense/
+├── camphish.sh          # Main launcher — starts PHP server + Cloudflare tunnel
+├── cleanup.sh           # Wipes all captured data after the session
+├── template.php         # Entry page (logs IP, redirects to quiz check-in)
+├── ip.php               # Visitor IP logging (included by template.php)
+├── post.php             # Handles student check-in form submission
+├── admin.php            # Password-protected admin dashboard
+├── cybersec_quiz.html   # The check-in page template (has VERCEL_QUIZ_URL placeholder)
+└── index.html           # Quiz page (deploy this to GitHub Pages / Vercel separately)
+```
+
+**Files created at runtime (NOT committed to git):**
+
+| File / Folder | Created By | Purpose |
+|---------------|-----------|---------|
+| `index.php` | `camphish.sh` | Generated from `template.php` with live tunnel URL |
+| `index2.html` | `camphish.sh` | Generated from `cybersec_quiz.html` with live tunnel URL |
+| `photos/` | `post.php` | Student check-in webcam captures |
+| `ip_logs/` | `ip.php` | Per-visitor IP log files |
+| `responses.jsonl` | `post.php` | All check-in records in JSON format |
+| `saved.ip.txt` | `post.php` | Human-readable check-in log |
+| `cloudflared` / `cloudflared.exe` | `camphish.sh` | Auto-downloaded Cloudflare binary |
+| `qrcode.png` | `camphish.sh` | QR code for the current session |
+
+---
+
+## ⚙️ Prerequisites
+
+### Required on the presenter's laptop:
+| Tool | Install |
+|------|---------|
+| `php` (8.0+) | `sudo apt install php` / [windows.php.net](https://windows.php.net/download/) |
+| `wget` | `sudo apt install wget` / included in Git Bash on Windows |
+| `bash` | Pre-installed on Linux/macOS. Windows: use [Git Bash](https://git-scm.com/downloads) |
+| `qrencode` *(optional)* | `sudo apt install qrencode` — generates a QR code PNG |
+
+`cloudflared` is **auto-downloaded** on first run — no manual install needed.
+
+---
+
+## 🚀 How to Run
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/YOUR_USERNAME/CyberSense.git
+cd CyberSense
+```
+
+### 2. Configure admin credentials
+
+Open `admin.php` and set your own credentials at the top:
+
+```php
+define('ADMIN_USER', getenv('CYBERSENSE_USER') ?: 'YourUsername');
+define('ADMIN_PASS', getenv('CYBERSENSE_PASS') ?: 'YourStrongPassword');
+```
+
+Or set environment variables before running:
+```bash
+export CYBERSENSE_USER="YourUsername"
+export CYBERSENSE_PASS="YourStrongPassword"
+```
+
+### 3. Deploy the quiz page (one-time setup)
+
+The `index.html` (quiz) is a **static page** that should be hosted separately for reliability:
+
+- Push `index.html` to a **GitHub Pages** repo, or deploy to **Vercel / Netlify**
+- Copy your hosted quiz URL (e.g. `https://yourusername.github.io/Quiz/`)
+
+### 4. Launch the tool
+
+```bash
 bash camphish.sh
 ```
 
-## Clean logs & unnecessary files :
+You'll be prompted to enter your quiz URL, then the script will:
+- Start a local PHP server (8 worker processes)
+- Download and launch a Cloudflare tunnel
+- Generate a QR code (`qrcode.png`)
+- Print both the public URL and the admin panel URL
 
 ```
+[*] Direct link (share this):    https://xxxx-xxxx.trycloudflare.com
+[*] Admin panel (local):          http://localhost:3333/admin.php
+[*] Admin panel (any device):     https://xxxx-xxxx.trycloudflare.com/admin.php
+[*] QR code saved: qrcode.png
+```
+
+### 5. Display the QR code
+
+Open `qrcode.png` and display it on the projector screen. Students scan it with their phones.
+
+### 6. Monitor check-ins
+
+Open the admin panel URL in your browser. Default credentials (change these!):
+- **Username:** `admin`
+- **Password:** `changeme123`
+
+### 7. Clean up after the session
+
+```bash
 bash cleanup.sh
 ```
-<p>The cam files and saved location will also be removed.</p>
 
-## Change Log:
+This wipes all photos, logs, captured IPs, and generated files.
 
-<p><b>Version: 2.0:</b> Added GPS Location Tracking</p>
-<ul>
-  <li>Added: GPS location capturing functionality</li>
-  <li>Added: Google Maps integration for captured locations</li>
-  <li>Added: Location accuracy reporting</li>
-  <li>Added: Improved loading screen with location request</li>
-</ul>
+---
 
-<p><b>Version: 1.9:</b> Enhanced architecture detection</p>
-<ul>
-  <li>Added: Improved architecture detection for all CPU types</li>
-  <li>Added: Better support for Apple Silicon (M1/M2/M3) Macs</li>
-  <li>Added: Automatic detection of ARM, ARM64, x86, and x86_64 architectures</li>
-  <li>Fixed: Windows compatibility improvements</li>
-  <li>Fixed: CloudFlare Tunnel download issues</li>
-</ul>
+## 🔄 How It Works (Full Flow)
 
-<p><b>Version: 1.8:</b> Added CloudFlare Tunnel and removed Serveo</p>
-<ul>
-  <li>Added: CloudFlare Tunnel support for more reliable connections</li>
-  <li>Removed: Serveo tunnel (deprecated)</li>
-  <li>Fixed: Various code improvements and bug fixes</li>
-</ul>
+```
+Student scans QR code
+        │
+        ▼
+https://xxxx.trycloudflare.com   ← Cloudflare edge
+        │
+        ▼  (tunneled to your laptop)
+template.php / index.php          ← Logs visitor IP
+        │
+        ▼  (redirects to)
+https://your-quiz-url/            ← GitHub Pages quiz (10 questions)
+        │
+        ▼  (quiz submits form to)
+cybersec_quiz.html / index2.html  ← Check-in form (name, student ID, webcam)
+        │
+        ▼
+post.php                          ← Saves response + photo to disk
+        │
+        ▼
+admin.php                         ← Presenter views all entries live
+```
 
-<p><b>Version: 1.7:</b> Fix and add support</p>
-<ul>
-  <li>fixed: termux failed to get home directory</li>
-  <li>Add support for Apple sillicon (M1/M2/M3 ARM64)</li>
-  <li>Add support for arm64 like Raspberry Pi</li>
-</ul>
-<p><b>Version: 1.6:</b> Fix ngrok direct link generate</p>
-<p><b>Version: 1.5:</b> Add new online meeting template</p>
-<p><b>Version: 1.4:</b> Ngrok authtoken update</p>
-<p><b>Version: 1.3:</b> Fix ngrok direct link</p>
+---
 
-### Important Notice
-Unauthorized reuploading of this project is prohibited.
+## 🖥️ Platform Support
 
-#### For More Video subcribe <a href="http://youtube.com/techchipnet">TechChip YouTube Channel</a>
-<p>CamPhish is created to help in penetration testing and it's not responsible for any misuse or illegal purposes.</p>
-<p>CamPhish is inspired by https://github.com/thelinuxchoice/ Big thanks to @thelinuxchoice</p>
+| OS | Works? | Notes |
+|----|--------|-------|
+| Linux (Kali, Ubuntu, Debian) | ✅ | Full support, 8 PHP workers |
+| macOS | ✅ | Intel + Apple Silicon auto-detected |
+| Windows (Git Bash) | ✅ | Uses single PHP worker; run via Git Bash |
+
+---
+
+## 🔧 Troubleshooting
+
+### Cloudflare tunnel not generating a URL
+```bash
+# Kill any leftover processes first
+killall cloudflared php 2>/dev/null
+
+# Then restart
+bash camphish.sh
+```
+
+If it still fails, fix DNS:
+```bash
+echo "nameserver 1.1.1.1" | sudo tee /etc/resolv.conf
+```
+
+### Error 1033 on student devices
+The tunnel on the presenter's laptop has died. Simply restart `bash camphish.sh` — a new URL is generated. Share the new QR code.
+
+### Keep the session stable (recommended)
+Run inside `tmux` so the session survives terminal closes:
+```bash
+tmux new -s cybersense
+bash camphish.sh
+# Detach: Ctrl+B then D
+# Reattach: tmux attach -t cybersense
+```
+
+### Admin panel shows no entries
+Make sure students are using the generated Cloudflare URL (not localhost). Check that `responses.jsonl` exists and has content.
+
+---
+
+## 📁 After the Workshop
+
+1. Download `responses.jsonl` and `photos/` for your records if needed
+2. Run `bash cleanup.sh` to wipe everything from disk
+3. The Cloudflare tunnel URL expires when you stop the script — no further cleanup needed on Cloudflare's end
+
+---
+
+## 🙏 Credits
+
+- Built on top of [CamPhish](https://github.com/techchipnet/CamPhish) by [TechChip](https://techchip.net)
+- Tunneling powered by [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/)
+- Designed for the **Cybersecurity Awareness Workshop** — URK College of Engineering & Technology
