@@ -221,6 +221,6 @@ Make sure students are using the generated Cloudflare URL (not localhost). Check
 
 ## 🙏 Credits
 
-- Built on top of [CamPhish](https://github.com/techchipnet/CamPhish) by [TechChip](https://techchip.net)
+- Developed by **[Abin Shaji Thomas](https://github.com/Abin-Shaji-Thomas)**
 - Tunneling powered by [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/)
-- Designed for the **Cybersecurity Awareness Workshop** — URK College of Engineering & Technology
+- Designed for the **Cybersecurity Awareness Workshop** — Karunya University
